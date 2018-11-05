@@ -13,17 +13,21 @@ app.use(express.static('public'));
 
 const SHEETDB_PRODUCTINFO_ID = config.get('productinfo_id');
 
+app.listen(app.get('port'),function(){
+    console.log('[app.listen] Node app is running on port',app.get('port'));
+});
+
+module.exports = app;
+
 app.post('/webhook', function(req, res){
     console.log("[WebHook] In");
     let data = req.body;
     let queryCategory = data.queryResult.parameters["Category"];
     var thisQs={};
     //Add different attributes depend on queryCategory is 熱門 or not
-    if(queryCategory=="熱門")
-    {   
+    if(queryCategory=="熱門"){   
         thisQs.IsHot = "TRUE";
-    }else
-    {
+    }else{
         thisQs.Category = queryCategory;
     }
     thisQs.casesensitive = false;
@@ -33,21 +37,15 @@ app.post('/webhook', function(req, res){
         method:"GET",
         headers:{"Content-Type":"application/json"},
         qs:thisQs
-    },function(error, response, body){
+        },function(error, response, body){
         if(!error && response.statusCode == 200){
             console.log("[SheetDB API] Success");
             sendCards(body, res);
         }else{
-            console.log("[SheetDB API] failed");
+            console.log("[SheetDB API] failed!");
         }
     });
 });
-
-app.listen(app.get('port'),function(){
-    console.log('[app.listen] Node app is running on port',app.get('port'));
-});
-
-module.exports = app;
 
   function sendCards(body, res){
     console.log("[sendCarsoulCards] In");
@@ -67,10 +65,8 @@ module.exports = app;
         ];
         thisFulfillmentMessages.push(thisObject);
     }
-    
     var responseObject = {
         fulfillmentMessages: thisFulfillmentMessages
     };
-    
     res.json(responseObject);
   }
